@@ -1,0 +1,22 @@
+# Ignore folders
+build
+node_modules
+.next
+
+# Ignore logs
+*.log
+
+# Ignore settings
+**/.settings
+**/target
+/.settings
+/.idea
+**/*.iml
+.project
+.classpath
+.release.properties
+*.releaseBackup
+
+# Ignore system files
+.DS_Store
+._*

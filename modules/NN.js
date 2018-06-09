@@ -15,8 +15,11 @@ export default class NN {
 
         // Add the layer
         this.model.add(hidden);
-
+        //
         // Creat another layer
+
+        this.model.add(tf.layers.flatten());
+
         const output = tf.layers.dense({units: outputUnits, activation}); // here the input shape is "inferred from the previous layer"
         this.model.add(output);
 
@@ -27,14 +30,14 @@ export default class NN {
         this.model.compile({optimizer: sgdOpt, loss: tf.losses.meanSquaredError});
     };
 
-    static train = async (xs, ys) => {
+    train = async (xs, ys) => {
         const config = {shuffle: true, epochs: 10};
         const response = await this.model.fit(xs, ys, config);
         console.log("training completed, loss is: ", response.history.loss[0]);
     };
 
     predict = (xs) => {
-        const outputs = model.predict(xs);
+        const outputs = this.model.predict(xs);
         console.log('predicting complete');
         outputs.print();
         return outputs;

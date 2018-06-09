@@ -6,16 +6,16 @@ let store = null;
 
 class Store {
 
-    @observable trainPhotos = [];
+    trainPhotos = [];
+    guessPhoto;
 
     constructor(isServer, lastUpdate) {
         this.lastUpdate = lastUpdate;
-        this.nn = new NN(4, [2]);
+        this.nn = new NN(1, [3600, 3]);
     }
 
     prepareData(document) {
         const imgs = Array.from(document.getElementsByTagName('img'));
-
         imgs.forEach((img)=> {
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
@@ -26,45 +26,47 @@ class Store {
             let pixelsArr = [];
 
             for (let i = 0; i < imgData.data.length; i += 4) {
-                const pixel = {
-                    r: imgData.data[i]/255,
-                    g: imgData.data[i+1]/255,
-                    b: imgData.data[i+2]/255
-                };
+                const pixel = [
+                    imgData.data[i]/255,
+                    imgData.data[i+1]/255,
+                    imgData.data[i+2]/255
+                ];
 
                 pixelsArr.push(pixel);
             }
 
-            console.log("picture added to trainPhotos, this photo has ", pixelsArr.length, " pixels");
-            this.trainPhotos = [...this.trainPhotos, pixelsArr];
+            img.className.includes('guessPhoto') ? this.guessPhoto = pixelsArr : this.trainPhotos = [...this.trainPhotos, pixelsArr];
+            // this.trainPhotos = [...this.trainPhotos, tf.fromPixels(img)];
             console.log("length of trainPhotos is:", this.trainPhotos.length)
         });
+
+        console.log("trainPhotos", this.trainPhotos)
     }
 
     train() {
-        const xs = tf.tensor2d([
-            [0, 0],
-            [0.5, 0.5],
-            [1, 1]
-        ]);
+        console.log(this.trainPhotos);
+        const xs = tf.tensor3d(this.trainPhotos);
 
         const ys = tf.tensor2d([
             [1],
-            [0.5],
+            [1],
+            [1],
+            [1],
+            [1],
+            [0],
+            [0],
+            [0],
+            [0],
             [0]
         ]);
 
         this.nn.train(xs, ys);
+    }
 
-        //
-        // const xs2 = tf.tensor2d([
-        //   [0.25, 0.92],
-        //   [0.12, 0.3],
-        //   [0.4, 0.74],
-        //   [0.1, 0.22],
-        // ]);
-        //
-        // let ys2 = this.nn.predict(xs);
+    predict() {
+        const xs = tf.tensor3d([this.guessPhoto]);
+        let ys = this.nn.predict(xs);
+        return ys.dataSync()[0].toFixed(2);
     }
 }
 

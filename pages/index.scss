@@ -1,0 +1,15 @@
+.outerWrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 960px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.photosGrid {
+  width: 500px;
+  display: flex;
+  justify-content: space-around;
+}

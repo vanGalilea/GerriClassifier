@@ -1,63 +1,44 @@
 import {Component} from 'react';
-import brain from 'brain.js';
-
-const net = new brain.NeuralNetwork();
-
-var output = net.run({ r: 1, g: 0.4, b: 0 });
+import {Provider} from 'mobx-react';
+import {initStore} from '../modules/store';
 
 export default class index extends Component {
+    static getInitialProps ({ req }) {
+        const isServer = !!req;
+        const store = initStore(isServer);
+        return { lastUpdate: store.lastUpdate, isServer }
+    }
+
+    constructor (props) {
+        super(props);
+        this.store = initStore(props.isServer, props.lastUpdate)
+    }
+
     componentDidMount() {
-        this.prepareData(document)
+        this.store.prepareData(document)
     }
 
-    prepareData(document) {
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        const img = document.getElementById('myimg');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        context.drawImage(img, 0, 0 );
-        const imgData = context.getImageData(0, 0, img.width, img.height);
-        let pixelsArr = [];
-
-        for (let i = 0; i < imgData.data.length; i += 4) {
-            const pixel = {
-                r: imgData.data[i]/255,
-                g: imgData.data[i+1]/255,
-                b: imgData.data[i+2]/255
-            };
-
-            pixelsArr.push(pixel);
-        }
-
-        console.log(pixelsArr)
-    }
-
-    //
-    // trainModel(pixelsArr, isGerri) {
-    //     net.train([{input: pixelsArr, output: {isGerri}}]);
-    // }
-
-
-
-
-
-    render(){
+    render() {
         return (
-            <div id="hiddenPhotos">
-                <img id="myimg" src="/static/gerri.jpg" alt=""/>
+            <Provider store={this.store}>
+                <div className="outerWrap">
+                    <h2>De Gerri classifier</h2>
+                    <div className="photosGrid">
+                        <img id="myimg" src="/static/ger1.jpg" alt=""/>
+                        <img id="myimg" src="/static/ger2.jpg" alt=""/>
+                        <img id="myimg" src="/static/ger3.jpg" alt=""/>
+                        <img id="myimg" src="/static/ger4.jpg" alt=""/>
+                        <img id="myimg" src="/static/ger5.jpg" alt=""/>
+                    </div>
 
 
-
-                <style jsx>
-                    {`
-                        img {
-                            display: none;
-                        }
-
-                    `}
-                </style>
-            </div>
+                    {/*language=SCSS*/}
+                    <style jsx>
+                        {`@import 'index';`}
+                    </style>
+                </div>
+            </Provider>
         )
     }
+
 }

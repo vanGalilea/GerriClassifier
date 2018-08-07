@@ -14,26 +14,37 @@ export default class index extends Component {
         this.store = initStore(props.isServer, props.lastUpdate);
         this.state = {
             result: '',
-            probability: '',
-            isLoading: true
+            probability: ''
         }
     }
 
-    classifyImage = async ()=> {
-        const image = this.imageRef;
-        const classifier = await ml5.imageClassifier('MobileNet');
-        const results = await classifier.predict(image);
+    captureWebcam = async ()=> {
+        const video = this.videoRef;
+        video.srcObject = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.play();
+    };
+
+    classifyVideo = async ()=> {
+        const video = this.videoRef;
+        const  classifier = await ml5.imageClassifier('MobileNet', video);
+        this.loop(classifier);
+    };
+
+    loop = async (classifier) => {
+        const results = await classifier.predict();
         const firstResult = results[0];
         const {className, probability} = firstResult;
         this.setState({
             result: className,
             probability:  (probability * 100).toFixed(2) + '%',
             isLoading: false
-        })
+        });
+        this.loop(classifier);
     };
 
     componentDidMount() {
-        this.classifyImage();
+        this.captureWebcam();
+        this.classifyVideo();
     }
 
     render() {
@@ -42,23 +53,25 @@ export default class index extends Component {
         return (
             <Provider store={this.store}>
                 <div className="outerWrap">
-                    <h1>Image classification using MobileNet</h1>
+                    <h1>Webcam Image classification using MobileNet</h1>
                     <div className="textContainer">
-                        <span>The MobileNet model labeled this as </span>
+                        <span>The MobileNet model labeled this as - </span>
                         {
                             isLoading ?
                                 <span id="loading"> ...wait a minute...</span> :
                                 <div>
                                     <span id="result">{" " + result + " "}</span>
-                                    <span>with a confidence of</span>
+                                    <span> with a confidence of </span>
                                     <span id="probability">{" " + probability + '.'}</span>
                                 </div>
                         }
                     </div>
-                    <img
-                        ref={(ref)=> this.imageRef = ref}
-                        src="/static/bird.jpg"
-                    />
+                    <video
+                        width="640"
+                        height="480"
+                        ref={(ref)=> this.videoRef = ref}
+                        autoPlay>
+                    </video>
                     
                     {/*language=SCSS*/}
                     <style jsx>
@@ -68,10 +81,6 @@ export default class index extends Component {
                                 justify-content: center;
                                 flex-direction: column;
                                 align-items: center;
-
-                                img {
-                                    width: 400px;
-                                }
 
                                 #result,
                                 #probability,

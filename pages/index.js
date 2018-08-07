@@ -13,69 +13,61 @@ export default class index extends Component {
         super(props);
         this.store = initStore(props.isServer, props.lastUpdate);
         this.state = {
-            score : null
+            result: '',
+            probability: ''
         }
     }
 
     componentDidMount() {
-        this.store.prepareData(document);
-        this.store.train();
-    }
+        const image = this.imageRef;
 
-    handleClick() {
-        const predictionScore = this.store.predict();
-        this.setState({score: predictionScore})
+        ml5.imageClassifier('MobileNet')
+              .then(classifier => classifier.predict(image))
+              .then(results => {
+                  const firstResult = results[0];
+                  const {className, probability} = firstResult;
+                  this.setState({
+                      result: className,
+                      probability:  (probability*100).toFixed(2) + '%'
+                  })
+              });
     }
 
     render() {
-        const {score} = this.state;
+        const {result, probability} = this.state;
 
         return (
             <Provider store={this.store}>
                 <div className="outerWrap">
-                    <h2>De Gerri classifier</h2>
-                    <div className="photosGrid">
-                        <img src="/static/ger1.jpg" alt=""/>
-                        <img src="/static/ger2.jpg" alt=""/>
-                        <img src="/static/ger3.jpg" alt=""/>
-                        <img src="/static/ger4.jpg" alt=""/>
-                        <img src="/static/ger5.jpg" alt=""/>
-                        <img src="/static/per1.jpeg" alt=""/>
-                        <img src="/static/per2.jpeg" alt=""/>
-                        <img src="/static/per3.jpeg" alt=""/>
-                        <img src="/static/per4.jpeg" alt=""/>
-                        <img src="/static/per5.jpeg" alt=""/>
-                    </div>
-
-                    <h2>Guess!</h2>
-                    <img className="guessPhoto" src="/static/guess.jpeg" alt=""/>
-                    {!score ? <button onClick={()=> this.handleClick()}>is Gerri ?</button> : <h2>I'm {score* 100}% sure it's Gerri...</h2>}
-
+                    <h1>Image classification using MobileNet</h1>
+                    <p>
+                        The MobileNet model labeled this as
+                        <span id="result">{" " + result + " "}</span>
+                        with a confidence of
+                        <span id="probability">{" " + probability}</span>.
+                    </p>
+                    <img
+                        ref={(ref)=> this.imageRef = ref}
+                        src="/static/bird.jpg"
+                    />
+                    
                     {/*language=SCSS*/}
                     <style jsx>
                         {`
-
                             .outerWrap {
                                 display: flex;
-                                flex-direction: column;
                                 justify-content: center;
+                                flex-direction: column;
                                 align-items: center;
-                                width: 960px;
-                                margin: 0 auto;
-                                text-align: center;
-                            }
 
-                            .photosGrid {
-                                width: 600px;
-                                display: flex;
-                                flex-wrap: wrap;
-                                justify-content: space-around;
-                            }
+                                img {
+                                    width: 400px;
+                                }
 
-
-                            img {
-                                width: 60px;
-                                height: 60px;
+                                #result,
+                                #probability {
+                                    font-weight: bold;
+                                }
                             }
                         `}
                     </style>

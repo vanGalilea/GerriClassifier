@@ -13,17 +13,17 @@ class Layout extends Component {
                     </title>
                     <meta name="viewport" content="width=device-width, initial-scale=1"/>
                     <meta name="description" content=""/>
-
+                    <script src="https://unpkg.com/ml5@0.1.1/dist/ml5.min.js" type="text/javascript"></script>
                 </Head>
                 {children}
 
                 {/*language=SCSS*/}
                 <style jsx>
                     {`
-                            .layout {
-                                height: 100vh;
-                            }
-                        `}
+                        .layout {
+                            height: 100vh;
+                        }
+                    `}
                 </style>
             </div>
         )
